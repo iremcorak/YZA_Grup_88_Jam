@@ -77,5 +77,41 @@ if st.button("Gönder") and user_input.strip() != "":
     with open("gunlukler.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(log, ensure_ascii=False) + "\n")
 
+# -------------------------------------
+# 🔍 GEÇMİŞ GÜNLÜKLERİ GÖSTER
+# -------------------------------------
 
+st.markdown("---")
+st.subheader("📚 Geçmiş Günlükler")
+
+# Günlük verilerini oku
+daily_logs = []
+if os.path.exists("gunlukler.jsonl"):
+    with open("gunlukler.jsonl", "r", encoding="utf-8") as f:
+        for line in f:
+            try:
+                daily_logs.append(json.loads(line))
+            except:
+                pass
+
+# Etiketleri topla (filtre için)
+etiketler = sorted(set(log.get("etiket", "Genel").replace("Etiket:", "").strip() for log in daily_logs if "etiket" in log))
+selected_etiket = st.selectbox("Etikete göre filtrele:", ["Tümü"] + etiketler)
+
+# Filtrele
+if selected_etiket != "Tümü":
+    filtered_logs = [log for log in daily_logs if selected_etiket in log.get("etiket", "")]
+else:
+    filtered_logs = daily_logs
+
+# Göster
+for log in reversed(filtered_logs):  # Son girilenler üstte
+    st.markdown(f"""
+    **🗓️ Tarih:** {log.get("tarih", "")}  
+    **✍️ Girdi:** {log.get("girdi", "")}  
+    **🧠 Özet:** {log.get("ozet", "")}  
+    **🏷️ Etiket:** {log.get("etiket", "")}  
+    **💬 Yorum:** {log.get("yorum", "")}
+    ---
+    """)
 
