@@ -55,7 +55,7 @@ if st.button("Gönder") and user_input.strip() != "":
 
 
     log = {
-        "tarih": "2025-05-04",
+        "tarih": datetime.now().isoformat(),
         "girdi": user_input,
         "ozet": response.text.split("Özet:")[1].split("Etiket:")[0].strip(),
         "etiket": response.text.split("Etiket:")[1].split("Yorum:")[0].strip(),
