@@ -42,7 +42,7 @@ Ayrıca, **sürdürülebilirlik** odağıyla geliştirilmiş olan uygulama, öğ
 
 
 ## 📌 Notlar 
--Proje içerisinde bulunan bazı kütüphaneler ekstra indirme gerekebilir. **pip install istenilen_kütüphane** komutuyla indirebilirsiniz.
--Proje sadece eğitim ve gözlem içindir. Katkıya kapalıdır.
+- Proje içerisinde bulunan bazı kütüphaneler ekstra indirme gerekebilir. **pip install istenilen_kütüphane** komutuyla indirebilirsiniz.
+- Proje sadece eğitim ve gözlem içindir. Katkıya kapalıdır.
 
 
