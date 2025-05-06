@@ -27,6 +27,7 @@ future_plan = st.text_area("Öğrendiklerini nasıl uygulayacağınızı planlı
 
 if st.button("Gönder") and user_input.strip() != "":
     with st.spinner("Yapay zeka düşünürken biraz bekleyelim..."):
+        # EKLENTİ: prompt’a sürdürülebilirlik adımı eklendi
         prompt = f"""
         Kullanıcı bugün şöyle yazdı:
         "{user_input}"
@@ -35,10 +36,13 @@ if st.button("Gönder") and user_input.strip() != "":
         1. Bu girdiyi özetle (1 cümle).
         2. Konu etiketi üret (sadece 1-2 kelime).
         3. Motive edici kısa bir geri bildirim ver.
+        4. Sürdürülebilirlik ile ilgili motive edici bir cümle ekle; bu cümle öğrendiğin konuyla bağlantılı olsun, uygun değilse genel bir sürdürülebilirlik mesajı ver.
+
         Sonucu şu formatta ver:
         Özet: ...
         Etiket: ...
         Yorum: ...
+        Sürdürülebilirlik: ...
         """
         response = model.generate_content(prompt)
 
@@ -46,6 +50,8 @@ if st.button("Gönder") and user_input.strip() != "":
     summary = next((l for l in lines if l.startswith("Özet:")), "Özet: Bulunamadı")
     topic = next((l for l in lines if l.startswith("Etiket:")), "Etiket: Bulunamadı")
     comment = next((l for l in lines if l.startswith("Yorum:")), "Yorum: Bulunamadı")
+    # EKLENTİ: sürdürülebilirlik cevabını parse et
+    sustainability = next((l for l in lines if l.startswith("Sürdürülebilirlik:")), "Sürdürülebilirlik: Bulunamadı")
 
     st.subheader("🎯 Özet")
     st.success(summary.replace("Özet:", "").strip())
@@ -56,12 +62,18 @@ if st.button("Gönder") and user_input.strip() != "":
     st.subheader("💬 Yorum")
     st.warning(comment.replace("Yorum:", "").strip())
 
+    # EKLENTİ: sürdürülebilirlik bölümünü göster
+    st.subheader("🌱 Sürdürülebilirlik")
+    st.info(sustainability.replace("Sürdürülebilirlik:", "").strip())
+
     log = {
         "tarih": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "girdi": user_input,
         "ozet": summary.replace("Özet:", "").strip(),
         "etiket": topic.replace("Etiket:", "").strip(),
         "yorum": comment.replace("Yorum:", "").strip(),
+        # EKLENTİ: log’a sürdürülebilirlik alanı eklendi
+        "surdurulebilirlik": sustainability.replace("Sürdürülebilirlik:", "").strip(),
         "ogrenme_hedefi": learning_goal.strip() if learning_goal else None,
         "gelecek_planı": future_plan.strip() if future_plan else None
     }
@@ -70,7 +82,7 @@ if st.button("Gönder") and user_input.strip() != "":
         f.write(json.dumps(log, ensure_ascii=False) + "\n")
 
 # -------------------------------------
-# 📚 GEÇMİŞ GÜNLÜKLERİ GÖSTER
+# 📚 GEÇMİŞ KAYITLAR
 # -------------------------------------
 
 st.markdown("---")
@@ -105,13 +117,14 @@ for log in reversed(filtered_logs):
         <strong>🧠 Özet:</strong> {log.get("ozet", "")}<br>
         <strong>✍️ Girdi:</strong> {log.get("girdi", "")}<br>
         <small>💬 {log.get("yorum", "")}</small><br>
+        <strong>🌱 Sürdürülebilirlik:</strong> {log.get("surdurulebilirlik", "Belirtilmemiş")}<br>
         <strong>🎯 Hedef:</strong> {log.get("ogrenme_hedefi", "Belirtilmemiş")}<br>
         <strong>📈 Plan:</strong> {log.get("gelecek_planı", "Belirtilmemiş")}
     </div>
     """, unsafe_allow_html=True)
 
 # -------------------------------------
-# 📊 İSTATİSTİKSEL GÖRSELLEŞTİRME
+# 📈 İSTATİSTİKSEL GÖRSELLEŞTİRME
 # -------------------------------------
 
 st.markdown("---")
@@ -120,10 +133,10 @@ st.subheader("📈 En Sık Öğrenilen Konular")
 etiket_sayilari = Counter(log.get("etiket", "Bilinmiyor") for log in daily_logs)
 if etiket_sayilari:
     en_sik = etiket_sayilari.most_common(5)
-    etiketler, sayilar = zip(*en_sik)
+    etiket, sayilar = zip(*en_sik)
 
     fig, ax = plt.subplots()
-    ax.barh(etiketler, sayilar, color="skyblue")
+    ax.barh(etiket, sayilar)
     ax.invert_yaxis()
     ax.set_xlabel("Gün Sayısı")
     ax.set_title("En Sık Öğrenilen Konular")
